@@ -25,15 +25,27 @@ const MovieEditModal = () => {
 
   return (
     <div>
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Edit Movie</DialogTitle>
-        <DialogContent className="grid grid-cols-1 gap-4 py-2">
+        <DialogContent
+          style={{ padding: 10, marginBottom: 20 }}
+          className="grid grid-cols-4 gap-5"
+        >
+          {/* <div style={{  padding: 5, marginBottom: 10 }}> */}
+
           <TextField
+            fullWidth
             name="title"
             label="Title"
             value={editData.title}
             onChange={handleEditChange}
           />
+          {/* </div> */}
           <TextField
             name="type"
             label="Type"
@@ -71,11 +83,19 @@ const MovieEditModal = () => {
             value={editData.year}
             onChange={handleEditChange}
           />
+
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setEditImage(e.target.files?.[0] || null)}
           />
+          {editData.movieImage && (
+            <img
+              src={editData.movieImage}
+              alt="Movie Poster"
+              className="rounded w-[150px] h-auto border shadow"
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>

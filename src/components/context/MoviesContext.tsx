@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import axios from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { type Movie, initialMovie } from "../types/movieType";
 export const ContainerContext = createContext<any>(null);
@@ -10,6 +10,7 @@ export const ContainerContext = createContext<any>(null);
 export default function ContainerContextProvider(props: any) {
   const BASE_URL = "https://movie-dashboard-node.vercel.app/movie";
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Movie>(initialMovie);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -20,7 +21,8 @@ export default function ContainerContextProvider(props: any) {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
   const [filterField, setFilterField] = useState<string>("all");
-
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   // ==========================================================================================
   const filteredMovies = movies.filter((movie: Movie) => {
     const keyword = search.toLowerCase();
@@ -48,7 +50,11 @@ export default function ContainerContextProvider(props: any) {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/getAllmovies`);
+      const res = await axios.get(`${BASE_URL}/getAllUsersMovies`, {
+        headers: {
+          auth: localStorage.getItem("token") || "",
+        },
+      });
       setMovies(res.data.data);
     } catch (error) {
       console.error("Failed to fetch movies:", error);
@@ -57,24 +63,42 @@ export default function ContainerContextProvider(props: any) {
     }
   };
   // ==========================================================================================
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) =>
       data.append(key, value as string | Blob)
     );
-
-    if (imageFile) data.append("movieImage", imageFile);
+    if (imageFile) {
+      data.append("movieImage", imageFile);
+    } else {
+      toast.error("Please upload an image");
+      return;
+    }
 
     try {
-      await axios.post(`${BASE_URL}/addNewMovie`, data);
-      fetchMovies();
+      await axios.post(`${BASE_URL}/addNewMovie`, data, {
+        headers: {
+          auth: localStorage.getItem("token") || "",
+        },
+      });
+      setRefreshTrigger((prev) => prev + 1);
+      setSearch(""); // Clear search so new movie shows
+      setFilterField("all"); // Reset filter
+      fetchMovies(); // Refresh movie list
       setFormData(initialMovie);
       setImageFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setUploadedFileName(null);
       toast.success("Movie added successfully!");
-    } catch (error) {
-      console.error("Failed to submit movie:", error);
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.Error;
+      if (errorMsg === "please upload the picture") {
+        toast.error("Please upload the picture");
+      }
       toast.error("Failed to add movie");
+      console.error("Failed to submit movie:", errorMsg);
     }
   };
   // ==========================================================================================
@@ -82,7 +106,11 @@ export default function ContainerContextProvider(props: any) {
     try {
       await axios.delete(`${BASE_URL}/deleteOnemovie`, {
         data: { movie_id: id },
+        headers: {
+          auth: localStorage.getItem("token") || "",
+        },
       });
+      setMovies((prevMovies) => prevMovies.filter((movie) => movie._id !== id));
       fetchMovies();
       toast.success("Movie deleted");
     } catch (error) {
@@ -101,7 +129,11 @@ export default function ContainerContextProvider(props: any) {
     if (editImage) data.append("movieImage", editImage);
 
     try {
-      await axios.put(`${BASE_URL}/updateMovie`, data);
+      await axios.put(`${BASE_URL}/updateMovie`, data, {
+        headers: {
+          auth: localStorage.getItem("token") || "",
+        },
+      });
       fetchMovies();
       setEditOpen(false);
       toast.success("Movie updated successfully");
@@ -118,16 +150,17 @@ export default function ContainerContextProvider(props: any) {
   };
 
   // ==========================================================================================
-
   useEffect(() => {
     fetchMovies();
     setPage(1);
-    return () => {};
-  }, [search, filterField]);
+  }, [search, filterField, refreshTrigger]);
 
   return (
     <ContainerContext.Provider
       value={{
+        uploadedFileName,
+        setUploadedFileName,
+        fileInputRef,
         handleEdit,
         filteredMovies,
         paginatedMovies,

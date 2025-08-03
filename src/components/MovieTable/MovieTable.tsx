@@ -12,7 +12,7 @@ export default function MovieTable() {
   return (
     <div className="p-4 space-y-6 max-w-7xl mx-auto text-center">
       <Toaster />
-      <h1 className="text-4xl font-bold text-blue-700">🎬 Movie Dashboard</h1>
+      <h1 className="text-4xl font-bold text-blue-700">Media Management: Movies & TV Shows</h1>
       <MoviesForm />
 
       <MovieSearchFilter />
