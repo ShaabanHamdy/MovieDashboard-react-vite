@@ -8,7 +8,7 @@ import { type Movie, initialMovie } from "../types/movieType";
 export const ContainerContext = createContext<any>(null);
 
 export default function ContainerContextProvider(props: any) {
-  const BASE_URL = "http://localhost:5000/movie";
+  const BASE_URL = "https://movie-dashboard-node.vercel.app/movie";
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Movie>(initialMovie);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
   Pagination,
@@ -43,12 +42,14 @@ const MovieTableContainer = () => {
           <TableBody>
             {paginatedMovies.map((movie: Movie) => (
               <TableRow key={movie._id} className="hover:bg-gray-50 ">
+                  {/* {console.log(movie)} */}
                 <TableCell>
+                  
                   <div className=" max-w-[100px] flex flex-col items-center space-y-2">
                     <img
                       className="w-30 h-30 object-cover rounded"
                       alt={movie.title}
-                      src={`${movie?.movieImage?.find((e: any) => e) || ""}`}
+                      src={`${movie?.movieImage|| ""}`}
                     />
                     <span>{movie.title}</span>
                   </div>
