@@ -2,16 +2,13 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { createContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import {
   initialMovie,
   type DecodedToken,
-  type ErrorResponse,
-  type LoginValues,
   type Movie,
 } from "../types/movieType";
 export const ContainerContext = createContext<any>(null);
@@ -21,7 +18,6 @@ export default function ContainerContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const navigate = useNavigate();
   const BASE_URL = "https://movie-dashboard-node.vercel.app/movie";
   const [userdata, setUserdata] = useState<DecodedToken | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -189,34 +185,11 @@ export default function ContainerContextProvider({
   };
 
   // ==========================================================================================
-  const handleLogin = async (values: LoginValues) => {
-    try {
-      const { data } = await axios.post(
-        "https://movie-dashboard-node.vercel.app/user/login",
-        values
-      );
-
-      if (data.message === "success") {
-        setBackError("");
-        localStorage.setItem("token", data.token);
-        toast.success("Login successful!");
-        saveUserData();
-        navigate("/");
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-      toast.error("Login failed!");
-      if (axiosError.response) {
-        setBackError(axiosError.response.data.Error);
-      }
-    }
-  };
 
   // ==========================================================================================
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
     setUserdata(null);
     setMovies([]); // Clear movies on logout
   };
@@ -237,7 +210,7 @@ export default function ContainerContextProvider({
         setUserdata,
         logout,
         saveUserData,
-        handleLogin,
+
         isRegisterModalOpen,
         setRegisterModalOpen,
         errorBack,

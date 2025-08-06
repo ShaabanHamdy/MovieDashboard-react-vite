@@ -1,15 +1,46 @@
+import axios, { AxiosError } from "axios";
 import { Form, Formik } from "formik";
 import { useContext } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { ContainerContext } from "../../context/MoviesContext";
+import type { ErrorResponse, LoginValues } from "../../types/movieType";
 import FormInput from "../FormInput"; // New reusable component
 import RegisterModal from "../register/Register";
 import { loginSchema } from "../User_Validation";
 
 const Login = () => {
-  const { handleLogin, isRegisterModalOpen, setRegisterModalOpen, errorBack } =
-    useContext(ContainerContext);
+  const {
+    setBackError,
+    saveUserData,
+    isRegisterModalOpen,
+    setRegisterModalOpen,
+    errorBack,
+  } = useContext(ContainerContext);
+  const navigate = useNavigate();
+  // =============================================================================
+  const handleLogin = async (values: LoginValues) => {
+    try {
+      const { data } = await axios.post(
+        "https://movie-dashboard-node.vercel.app/user/login",
+        values
+      );
 
+      if (data.message === "success") {
+        setBackError("");
+        localStorage.setItem("token", data.token);
+        toast.success("Login successful!");
+        saveUserData();
+        navigate("/");
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      toast.error("Login failed!");
+      if (axiosError.response) {
+        setBackError(axiosError.response.data.Error);
+      }
+    }
+  };
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 to-white px-4">
       <Toaster />

@@ -9,8 +9,8 @@ import {
   type RegisterProps,
 } from "../../types/movieType";
 import FormInput from "../FormInput";
-
 import { registerSchema } from "../User_Validation";
+
 const Register: React.FC<RegisterProps> = ({ onClose }) => {
   const [errorBack, setBackError] = useState("");
 

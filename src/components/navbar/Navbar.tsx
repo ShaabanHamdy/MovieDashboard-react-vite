@@ -15,14 +15,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { ContainerContext } from "../context/MoviesContext";
 
 const Navbar = () => {
-  const { userdata, logout, isDrawerOpen, setIsDrawerOpen } =
-    useContext(ContainerContext);
-    const navigate = useNavigate();
-    const toggleDrawer = (open: boolean) => () => {
-      setIsDrawerOpen(open);
-    };
+  const { userdata, logout,isDrawerOpen ,setIsDrawerOpen } = useContext(ContainerContext);
+  
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
+  const toggleDrawer = (open: boolean) => () => {
+    setIsDrawerOpen(open);
+  };
 
   return (
     <nav className="bg-blue-500 text-white px-6 py-4 flex items-center justify-between shadow-md">
@@ -39,7 +43,7 @@ const Navbar = () => {
       <div className="hidden md:flex items-center gap-4">
         {userdata ? (
           <Button
-            onClick={logout}
+            onClick={handleLogout}
             variant="outlined"
             size="small"
             color="inherit"
@@ -86,7 +90,7 @@ const Navbar = () => {
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => {
-                      logout();
+                      handleLogout();
                       setIsDrawerOpen(false);
                     }}
                   >

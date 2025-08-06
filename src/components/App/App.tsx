@@ -1,8 +1,4 @@
-import {
-  Route,
-  Routes
-} from "react-router-dom";
-import ContainerContextProvider from "../context/MoviesContext";
+import { createBrowserRouter,  RouterProvider } from "react-router-dom";
 import Home from "../Home/Home";
 import MasterLayout from "../MasterLayout/MasterLayout";
 import Notfound from "../Notfound/Notfound";
@@ -11,23 +7,35 @@ import Login from "../users/login/Login";
 import Register from "../users/register/Register";
 
 export default function App() {
-  return (
-    <ContainerContextProvider>
-      <MasterLayout>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectPage>
-                <Home />
-              </ProtectPage>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register onClose={() => {}} />} />
-          <Route path="*" element={<Notfound />} />
-        </Routes>
-      </MasterLayout>
-    </ContainerContextProvider>
-  );
+
+
+
+  const routes = createBrowserRouter([
+    {
+      path: "/",
+      element: <MasterLayout   />,
+      errorElement: <Notfound />,
+      children: [
+        {
+          index: true,
+          element: (
+            <ProtectPage>
+              <Home />
+            </ProtectPage>
+          ),
+        },
+
+        {
+          path: "login",
+          element: <Login />,
+        },
+        {
+          path: "register",
+          element: <Register onClose={() => {}} />,
+        },
+      ],
+    },
+  ]);
+
+  return <RouterProvider router={routes} />;
 }
