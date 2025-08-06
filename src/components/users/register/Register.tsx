@@ -1,55 +1,32 @@
 import axios, { AxiosError } from "axios";
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import { useState, type SetStateAction } from "react";
+import { Form, Formik } from "formik";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { FaUserPlus } from "react-icons/fa";
-import * as Yup from "yup";
+import {
+  type ErrorResponse,
+  type RegisterFormValues,
+  type RegisterProps,
+} from "../../types/movieType";
+import FormInput from "../FormInput";
 
-interface RegisterProps {
-  onClose: () => void;
-}
-interface ErrorResponse {
-  Error: SetStateAction<string>;
-  message: string;
-}
-
-interface RegisterFormValues {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
+import { registerSchema } from "../User_Validation";
 const Register: React.FC<RegisterProps> = ({ onClose }) => {
   const [errorBack, setBackError] = useState("");
 
-  const registerSchema = Yup.object().shape({
-    firstName: Yup.string().required("First name is required"),
-    lastName: Yup.string().required("Last name is required"),
-    email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string()
-      .matches(
-        /^(?=.*[A-Z]{2,})(?=.*[!@#$%^&*]).*$/,
-        "Password must contain at least two uppercase letters and one special character"
-      )
-      .min(8, "Password must be at least 8 characters")
-      .required("Password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
-      .required("Confirm password is required"),
-  });
-
   const handleRegister = async (values: RegisterFormValues) => {
     try {
-      await axios.post("https://movie-dashboard-node.vercel.app/user/signup", values);
+      await axios.post(
+        "https://movie-dashboard-node.vercel.app/user/signup",
+        values
+      );
       toast.success("Registration successful!");
       onClose();
     } catch (error) {
       const axiosError = error as AxiosError<ErrorResponse>;
       toast.error("Registration failed. Please try again.");
       if (axiosError.response) {
-        setBackError(axiosError.response.data.Error);
+        setBackError(axiosError?.response?.data?.Error);
       }
     }
   };
@@ -65,7 +42,7 @@ const Register: React.FC<RegisterProps> = ({ onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-red-200 text-xl font-bold"
+            className="text-white hover:text-red-200 text-xl font-bold cursor-pointer"
             title="Close"
           >
             ✕
@@ -88,75 +65,33 @@ const Register: React.FC<RegisterProps> = ({ onClose }) => {
             <Form className="space-y-4">
               <div className="flex space-x-3">
                 <div className="flex-1">
-                  <Field
-                    type="text"
-                    name="firstName"
-                    placeholder="First Name"
-                    className="input-style"
-                  />
-                  <ErrorMessage
-                    name="firstName"
-                    component="div"
-                    className="error-text"
-                  />
+                  <FormInput name="firstName" placeholder="First Name" />
                 </div>
                 <div className="flex-1">
-                  <Field
-                    type="text"
-                    name="lastName"
-                    placeholder="Last Name"
-                    className="input-style"
-                  />
-                  <ErrorMessage
-                    name="lastName"
-                    component="div"
-                    className="error-text"
-                  />
+                  <FormInput name="lastName" placeholder="Last Name" />
                 </div>
               </div>
 
-              <Field
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="input-style"
-              />
-              <ErrorMessage
-                name="email"
-                component="div"
-                className="error-text"
-              />
               {errorBack === "email already exist" && (
                 <div className="error-text">{errorBack}</div>
               )}
+              <FormInput type="email" name="email" placeholder="Email" />
 
-              <Field
+              <FormInput
                 type="password"
                 name="password"
-                placeholder="Password"
-                className="input-style"
-              />
-              <ErrorMessage
-                name="password"
-                component="div"
-                className="error-text"
+                placeholder="password"
               />
 
-              <Field
+              <FormInput
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm Password"
-                className="input-style"
-              />
-              <ErrorMessage
-                name="confirmPassword"
-                component="div"
-                className="error-text"
               />
 
               <button
                 type="submit"
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded transition"
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded transition cursor-pointer"
               >
                 Create Account
               </button>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -11,26 +10,19 @@ import {
   ListItemButton,
   ListItemText,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ContainerContext } from "../context/MoviesContext";
 
-interface Props {
-  userdata: any;
-  logout: () => void;
-}
+const Navbar = () => {
+  const { userdata, logout, isDrawerOpen, setIsDrawerOpen } =
+    useContext(ContainerContext);
+    const navigate = useNavigate();
+    const toggleDrawer = (open: boolean) => () => {
+      setIsDrawerOpen(open);
+    };
 
-const Navbar = ({ userdata, logout }: Props) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const toggleDrawer = (open: boolean) => () => {
-    setIsDrawerOpen(open);
-  };
 
   return (
     <nav className="bg-blue-500 text-white px-6 py-4 flex items-center justify-between shadow-md">
@@ -47,7 +39,7 @@ const Navbar = ({ userdata, logout }: Props) => {
       <div className="hidden md:flex items-center gap-4">
         {userdata ? (
           <Button
-            onClick={handleLogout}
+            onClick={logout}
             variant="outlined"
             size="small"
             color="inherit"
@@ -94,7 +86,7 @@ const Navbar = ({ userdata, logout }: Props) => {
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => {
-                      handleLogout();
+                      logout();
                       setIsDrawerOpen(false);
                     }}
                   >

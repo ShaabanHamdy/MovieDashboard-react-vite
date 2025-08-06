@@ -1,18 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { type ReactNode } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../navbar/Navbar";
 
 interface Props {
-  userdata: any; 
-  logout: () => void;
+  children: ReactNode;
 }
-
-const MasterLayout = ({ userdata, logout }: Props) => {
+const MasterLayout = ({ children }: Props) => {
+  
   return (
     <>
-      <Navbar userdata={userdata} logout={logout} />
+      <Navbar />
       <div className="container">
         <Outlet />
+        {children}
       </div>
     </>
   );

@@ -1,14 +1,30 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { jwtDecode } from "jwt-decode";
 import { createContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { type Movie, initialMovie } from "../types/movieType";
+import { useNavigate } from "react-router-dom";
+import {
+  initialMovie,
+  type DecodedToken,
+  type ErrorResponse,
+  type LoginValues,
+  type Movie,
+} from "../types/movieType";
 export const ContainerContext = createContext<any>(null);
 
-export default function ContainerContextProvider(props: any) {
+export default function ContainerContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const navigate = useNavigate();
   const BASE_URL = "https://movie-dashboard-node.vercel.app/movie";
+  const [userdata, setUserdata] = useState<DecodedToken | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -19,10 +35,33 @@ export default function ContainerContextProvider(props: any) {
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState<Movie>(initialMovie);
   const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
   const [filterField, setFilterField] = useState<string>("all");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const [errorBack, setBackError] = useState("");
+  const rowsPerPage = 5;
+  // ==========================================================================================
+  const saveUserData = () => {
+    try {
+      const encoded = localStorage.getItem("token");
+      if (encoded) {
+        const decodedToken = jwtDecode<DecodedToken>(encoded);
+
+        //  Check token expiry
+        if (decodedToken.exp && decodedToken.exp * 1000 < Date.now()) {
+          throw new Error("Token expired");
+        }
+
+        setUserdata(decodedToken);
+      }
+    } catch (err) {
+      console.error("Invalid or expired token:", err);
+      localStorage.removeItem("token");
+      setUserdata(null);
+    }
+  };
+
   // ==========================================================================================
   const filteredMovies = movies.filter((movie: Movie) => {
     const keyword = search.toLowerCase();
@@ -57,7 +96,7 @@ export default function ContainerContextProvider(props: any) {
       });
       setMovies(res.data.data);
     } catch (error) {
-      console.error("Failed to fetch movies:", error);
+      // console.error("Failed to fetch movies:", error);
     } finally {
       setLoading(false);
     }
@@ -102,6 +141,7 @@ export default function ContainerContextProvider(props: any) {
     }
   };
   // ==========================================================================================
+
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`${BASE_URL}/deleteOnemovie`, {
@@ -127,7 +167,6 @@ export default function ContainerContextProvider(props: any) {
     );
     if (editData._id) data.append("movieId", editData._id);
     if (editImage) data.append("movieImage", editImage);
-
     try {
       await axios.put(`${BASE_URL}/updateMovie`, data, {
         headers: {
@@ -150,14 +189,59 @@ export default function ContainerContextProvider(props: any) {
   };
 
   // ==========================================================================================
+  const handleLogin = async (values: LoginValues) => {
+    try {
+      const { data } = await axios.post(
+        "https://movie-dashboard-node.vercel.app/user/login",
+        values
+      );
+
+      if (data.message === "success") {
+        setBackError("");
+        localStorage.setItem("token", data.token);
+        toast.success("Login successful!");
+        saveUserData();
+        navigate("/");
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      toast.error("Login failed!");
+      if (axiosError.response) {
+        setBackError(axiosError.response.data.Error);
+      }
+    }
+  };
+
+  // ==========================================================================================
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+    setUserdata(null);
+    setMovies([]); // Clear movies on logout
+  };
+
+  // ==========================================================================================
   useEffect(() => {
     fetchMovies();
+    saveUserData();
     setPage(1);
   }, [search, filterField, refreshTrigger]);
 
   return (
     <ContainerContext.Provider
       value={{
+        isDrawerOpen,
+        setIsDrawerOpen,
+        userdata,
+        setUserdata,
+        logout,
+        saveUserData,
+        handleLogin,
+        isRegisterModalOpen,
+        setRegisterModalOpen,
+        errorBack,
+        setBackError,
         uploadedFileName,
         setUploadedFileName,
         fileInputRef,
@@ -191,7 +275,7 @@ export default function ContainerContextProvider(props: any) {
         rowsPerPage,
       }}
     >
-      {props.children}
+      {children}
     </ContainerContext.Provider>
   );
 }
