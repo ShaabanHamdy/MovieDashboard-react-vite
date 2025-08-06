@@ -66,7 +66,7 @@ const Login: React.FC<LoginProps> = ({ saveUserData }) => {
       <Toaster />
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-blue-600">🎬 MovieHub</h1>
+          <h1 className="text-3xl font-bold text-blue-600">🎬 Movie Hub</h1>
           <p className="text-gray-500 text-sm mt-1">
             Manage and explore your favorite movies & TV shows
           </p>
