@@ -1,4 +1,4 @@
-import { createBrowserRouter,  RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import Home from "../Home/Home";
 import MasterLayout from "../MasterLayout/MasterLayout";
 import Notfound from "../Notfound/Notfound";
@@ -7,13 +7,10 @@ import Login from "../users/login/Login";
 import Register from "../users/register/Register";
 
 export default function App() {
-
-
-
-  const routes = createBrowserRouter([
+  const routes = createHashRouter([
     {
       path: "/",
-      element: <MasterLayout   />,
+      element: <MasterLayout />,
       errorElement: <Notfound />,
       children: [
         {
